@@ -1,14 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul  1 10:27:48 2019
-
-@author: Yuktee
-"""
-
-# -- coding: utf-8 --
-#python color_tracking.py --video balls.mp4
-#python color_tracking.py
- 
 # import the necessary packages
 from collections import deque
 import numpy as np
