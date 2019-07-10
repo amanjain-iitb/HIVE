@@ -2,8 +2,8 @@
  
 const char* ssid = "Tinkerers' Lab";
 const char* password =  "tinker@tl";
-int one_f=D0;
-int one_b=D1;
+int one_f=D1;
+int one_b=D0;
 int two_f=D2;
 int two_b=D3;
 
@@ -56,24 +56,28 @@ void loop() {
         
         int dir = client.read()-48;
         int e= a*1000 +b*100 +c*10 +d;
-        client.println("got em'");
+        
         Serial.print(dir);
         if(dir==1){     Serial.println("ONWARDS");
-                        analogWrite(one_f,e);analogWrite(one_b,0);
-                        analogWrite(two_f,e);analogWrite(two_b,0);}
+                        analogWrite(one_f,1023);analogWrite(one_b,0);
+                        analogWrite(two_f,1023);analogWrite(two_b,0);}
         
         else if(dir==2){Serial.println("BACKWARDS");
-                        analogWrite(one_b,e);analogWrite(one_f,0);
-                        analogWrite(two_b,e);analogWrite(two_f,0);}
+                        analogWrite(one_b,1023);analogWrite(one_f,0);
+                        analogWrite(two_b,1023);analogWrite(two_f,0);}
         else if(dir==3){Serial.println("BACKWARDS");
-                        analogWrite(one_b,0);analogWrite(one_f,e);
-                        analogWrite(two_b,e);analogWrite(two_f,0);}
+                        analogWrite(one_b,0);analogWrite(one_f,1023);
+                        analogWrite(two_b,1023);analogWrite(two_f,0);}
         else if(dir==4){Serial.println("BACKWARDS");
-                        analogWrite(one_b,e);analogWrite(one_f,0);
-                        analogWrite(two_b,0);analogWrite(two_f,e);}
+                        analogWrite(one_b,1023);analogWrite(one_f,0);
+                        analogWrite(two_b,0);analogWrite(two_f,1023);}
         
         else            {analogWrite(one_f,0);analogWrite(one_b,0);
                         analogWrite(two_f,0);analogWrite(two_b,0); Serial.println("WHICHWAY!?!?!?!?!");}
+        delay(e);
+        analogWrite(one_f,0);analogWrite(one_b,0);
+                        analogWrite(two_f,0);analogWrite(two_b,0);
+        client.println("got em'");
         
         /*
         if(a=="1"){
