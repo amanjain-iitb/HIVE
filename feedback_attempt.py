@@ -17,12 +17,12 @@ def send(message,sock):
 
 
 
-HOST = '192.168.0.136'  # The server's hostname or IP address
+HOST = '192.168.43.10'  # The server's hostname or IP address
 PORT = 80
    
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-s.connect((HOST, PORT))
+#s.connect((HOST, PORT))
 
 final_pos=(30,100)
 kernel = np.ones((9,9),np.uint8)
@@ -30,15 +30,20 @@ camera = cv2.VideoCapture(0)
 
 direc='_'
 distance_list=[]
+dist_coeff=1
 
+
+url='http://192.168.0.137:8080/shot.jpg'
+
+#IP webcam image stream
+#URL = 'http://192.168.43.138:8080/shot.jpg'
+#urllib.request.urlretrieve(URL, 'shot1.jpg')
 while True:
-    #IP webcam image stream
-    URL = 'http://192.168.0.178:8080/shot.jpg'
-    urllib.request.urlretrieve(URL, 'shot1.jpg')
-    '''img_resp = requests.get(URL)
-    img_arr = np.array(bytearray(img_resp.content), dtype = np.uint8)
-    frame = cv2.imdecode(img_arr , -1)'''
     
+    initial=time.time()
+    imgResp=urllib.request.urlopen(url)
+    imgNp=np.array(bytearray(imgResp.read()),dtype=np.uint8)
+    frame=cv2.imdecode(imgNp,-1)
     frame = cv2.imread('shot1.jpg')
     frame = imutils.resize(frame, width=600)
     blurred = cv2.GaussianBlur(frame, (11, 11), 0)
@@ -51,8 +56,14 @@ while True:
     cv2.circle(frame,final_pos,30,(255,0,255))
     cv2.imshow("grad", gradient)
     cnts = cv2.findContours(gradient.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
+    
+    print("*******************************************")
+
+    print(time.time()-initial, "time taken image processing block")
+    initial=time.time()
+    
     if len(cnts)==0:
-        continue
+        pass
     else:
         i = max(cnts, key=cv2.contourArea)
         
@@ -74,43 +85,39 @@ while True:
             dist=np.linalg.norm(u)
             if angle>90:
                     angle=180-angle
-            print("*******************************************")
+            
         
             print("distance", dist)
             print("angle" ,angle)
             print('direc ',direc)
             print('direction list',distance_list)
             print("******")
+           
             if angle>=80:
                 if dist>30:
-                    print("reached in angle")
                     print(direc)
                     if direc=='1':
-                        dist_time=str(int(dist*5/8))
+                        dist_time=str(int(dist*dist_coeff))
                         dist_time=dist_time.rjust(4,'0') +'1'
                         send(str.encode(dist_time),s)
                         distance_list.append(dist)
                         print("movong",dist_time)
                     elif direc=='2':
-                        dist_time=str(int(dist/10))
+                        dist_time=str(int(dist*dist_coeff))
                         dist_time=dist_time.rjust(4,'0') +'2'
                         send(str.encode(dist_time),s)
                         distance_list.append(dist)
                         print("movong",dist_time)
                     elif direc=='_':
-                        print("here!")
                         if len(distance_list)==0:
                             print("inside trial")
                             distance_list.append(dist)
-                            send(str.encode('01501'),s)
+                            send(str.encode('00251'),s)
                         else:
-                            print("making the decision")
                             if dist<distance_list[-1]:
                                 direc='1'
-                                print("going same")
                             else:
                                 direc='2' 
-                                print("going diff")
                     else:
                         print("not supposed to be here")
                     
@@ -118,12 +125,12 @@ while True:
                     direc='_'
                     distance_list=[]
             else:
-                ang=int(2000/angle)
+                ang=int(1500/angle)
                 if ang>100:
                     ang=100
                 ang=str(ang)
                 ang=ang.rjust(4,'0') +'3'
-                send(str.encode(ang),s)
+                send(str.encode("00303"),s)
                 distance_list.append(dist)
                 print("angling",ang)
             
@@ -132,8 +139,8 @@ while True:
                 
                 
         cv2.drawContours(frame, [i], -1, (0,255,0), 3)
-        
-            
+        cv2.putText(frame,str(dist), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
+        print(time.time()-initial, "time taken image processing block")     
             
             
     '''
