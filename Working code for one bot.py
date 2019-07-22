@@ -15,13 +15,18 @@ def send(message,sock):
     return True
 
 def centre_(c):
+    '''
+    if c[0][0]==c[2][0] or c[1][0]==c[3][0]:
+        return int_(((c[0][0]+c[2][0])/2,(c[0][1]+c[2][1])/2))
     m13=(c[0][1]-c[2][1])/(c[0][0]-c[2][0])
     m24=(c[1][1]-c[3][1])/(c[1][0]-c[3][0])
-    if m13==m24 or m13==float('NaN') or m24==float('NaN'):
+    if m13==m24:
         return int_((c[0][0]+c[2][0])/2,(c[0][1]+c[2][1])/2)
     x=(c[1][1]-c[2][1]+(m13*c[2][0])-(m24*c[1][0]))/(m13-m24)
     y=(m24*x)+c[1][1]-(m24*c[1][0])
     return int_((x,y))
+    '''
+    return int_(((c[0][0]+c[1][0]+c[2][0]+c[3][0])/4,(c[0][1]+c[1][1]+c[2][1]+c[3][1])/4))
 
 def set_to_none(dict_):
     for key in dict_:
@@ -138,18 +143,17 @@ current_pos={1:None,2:None}
 
 WIDTH=1280
 HEIGHT=720
-cap = cv2.VideoCapture("http://192.168.43.192:8080/video")
-#cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
-kernel = np.ones((9,9),np.uint8)
-
+cap= WebcamVideoStream(src="http://192.168.43.49:8080/video").start()
+#cap= WebcamVideoStream(src=0).start()
+#cap.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
+#cap.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
 
 lin=''
 ang=''
 
+shape_pos=[]
 shape_maker(HEIGHT,WIDTH,no_bots)
-shape_pos=((30,300),(650,300))
+#shape_pos=((30,300),(650,300))
 shape=False
 
 while True:
@@ -235,12 +239,13 @@ while True:
                         ang='0'
                        
                     if ang[-1]!='0':
-                        ang_coeff='0017'
+                        ang_coeff='0010'
                         send(ang_coeff+ang,s[i])
-                        print(i)
                     if lin[-1]!='0':
-                        lin_coeff=str(int(dist/10)).rjust(4,'0')                             # ang/780)*30
-                        send('0050'+lin,s[i])
+                        if dist<20:
+                            send('0005'+lin,s[i])
+                        else:
+                            send('0020'+lin,s[i])
                  
                     cv2.line(frame,centre ,tuple(final_pos[i]),(0,105,255),2)
                     cv2.putText(frame,'distance:'+str(dist), (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255),2)
